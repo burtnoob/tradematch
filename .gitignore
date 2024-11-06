@@ -1,0 +1,19 @@
+# OS files
+.DS_Store
+*/.DS_Store
+
+# Environment files
+.env
+*/.env
+
+# Dependencies
+*/node_modules/
+*/package-lock.json
+
+# Build files
+*/build/
+*/dist/
+
+# IDE files
+.idea/
+.vscode/

@@ -1,74 +1,114 @@
+// frontend/src/components/Login.js
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Box,
+  Card,
+  CardContent,
+  TextField,
+  Button,
+  Typography,
+  Container,
+  Alert
+} from '@mui/material';
+import api from '../services/api';
 
-function Login({ onSubmit }) {
-    const [formData, setFormData] = useState({
-        username: '',
-        password: ''
+function Login() {
+  const navigate = useNavigate();
+  const [credentials, setCredentials] = useState({
+    username: '',
+    password: ''
+  });
+  const [error, setError] = useState('');
+
+  const handleChange = (e) => {
+    setCredentials({
+      ...credentials,
+      [e.target.name]: e.target.value
     });
-    const [isLoading, setIsLoading] = useState(false);
+  };
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    
+    try {
+      console.log('Attempting login...');
+      const response = await api.login(credentials);
+      console.log('Login response:', response);
+      
+      if (response.token) {
+        localStorage.setItem('token', response.token);
+        // Add a small delay to ensure token is stored
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 100);
+      } else {
+        setError('Invalid login response');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setError('Login failed. Please check your credentials.');
+    }
+  };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setIsLoading(true);
-        
-        try {
-            await onSubmit(formData);
-        } catch (error) {
-            console.error('Login error:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    return (
-        <div className="login-form-container">
-            <form onSubmit={handleSubmit} className="login-form">
-                <div className="form-group">
-                    <label htmlFor="username">Username</label>
-                    <input
-                        type="text"
-                        id="username"
-                        name="username"
-                        value={formData.username}
-                        onChange={handleChange}
-                        required
-                        autoComplete="username"
-                        placeholder="Enter your username"
-                    />
-                </div>
-
-                <div className="form-group">
-                    <label htmlFor="password">Password</label>
-                    <input
-                        type="password"
-                        id="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        required
-                        autoComplete="current-password"
-                        placeholder="Enter your password"
-                    />
-                </div>
-
-                <button 
-                    type="submit" 
-                    className="login-button"
-                    disabled={isLoading}
-                >
-                    {isLoading ? 'Logging in...' : 'Login'}
-                </button>
-            </form>
-        </div>
-    );
+  return (
+    <Container component="main" maxWidth="xs">
+      <Box sx={{
+        marginTop: 8,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center'
+      }}>
+        <Typography component="h1" variant="h4" sx={{ mb: 4 }}>
+          TradeMatch Login
+        </Typography>
+        {error && (
+          <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
+            {error}
+          </Alert>
+        )}
+        <Card sx={{ width: '100%' }}>
+          <CardContent>
+            <Box component="form" onSubmit={handleSubmit}>
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                id="username"
+                label="Username"
+                name="username"
+                autoComplete="username"
+                autoFocus
+                value={credentials.username}
+                onChange={handleChange}
+              />
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                name="password"
+                label="Password"
+                type="password"
+                id="password"
+                autoComplete="current-password"
+                value={credentials.password}
+                onChange={handleChange}
+              />
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                sx={{ mt: 3, mb: 2 }}
+              >
+                Login
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
+      </Box>
+    </Container>
+  );
 }
 
 export default Login;

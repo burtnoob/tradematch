@@ -1,22 +1,49 @@
+// frontend/src/App.js
 import React from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { ThemeProvider, CssBaseline } from '@mui/material';
+import { createTheme } from '@mui/material/styles';
+import Login from './components/Login';
+import Dashboard from './components/Dashboard';
 
-// Import page components
-import LoginPage from './pages/LoginPage';
-import DashboardPage from './pages/DashboardPage';
-import TradeDetailsPage from './pages/TradeDetailsPage';
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#007bff',
+    },
+    secondary: {
+      main: '#004085',
+    },
+    background: {
+      default: '#f8f9fa',
+    },
+  },
+});
+
+// Protected Route component
+const ProtectedRoute = ({ children }) => {
+  const isAuthenticated = localStorage.getItem('token');
+  return isAuthenticated ? children : <Navigate to="/" />;
+};
 
 function App() {
   return (
-    <Router>
-      <div className="App">
-        <Switch>
-          <Route exact path="/" component={LoginPage} />
-          <Route path="/dashboard" component={DashboardPage} />
-          <Route path="/trade/:id" component={TradeDetailsPage} />
-        </Switch>
-      </div>
-    </Router>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Router>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route 
+            path="/dashboard" 
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } 
+          />
+        </Routes>
+      </Router>
+    </ThemeProvider>
   );
 }
 
